@@ -8,25 +8,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
           channel: 'stable'
-      - name: Setup
+
+      - name: Build
         run: |
-          cd StorageShrink
+          cp -r StorageShrink/* .
           mkdir -p lib/l10n
-          cp ../l10n/*.arb lib/l10n/ 2>/dev/null || true
-          cp ../app_*.arb lib/l10n/ 2>/dev/null || true
+          find . -maxdepth 2 -name "*.arb" -exec cp {} lib/l10n/ \;
           flutter pub get
           flutter gen-l10n
           flutter build apk --release
+
       - uses: actions/upload-artifact@v4
         with:
           name: StorageShrink-APK
-          path: StorageShrink/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
