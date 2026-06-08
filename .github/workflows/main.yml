@@ -16,11 +16,17 @@ jobs:
         with:
           flutter-version: '3.19.6'
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter gen-l10n
-      - run: flutter build apk --release
+      - name: Setup
+        run: |
+          cd StorageShrink
+          mkdir -p lib/l10n
+          cp ../l10n/*.arb lib/l10n/ 2>/dev/null || true
+          cp ../app_*.arb lib/l10n/ 2>/dev/null || true
+          flutter pub get
+          flutter gen-l10n
+          flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: StorageShrink-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: StorageShrink/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
