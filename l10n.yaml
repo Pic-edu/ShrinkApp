@@ -1,3 +1,36 @@
-arb-dir: lib/l10n
-template-arb-file: app_en.arb
-output-localization-file: app_localizations.dart
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+          channel: 'stable'
+      - name: Build
+        run: |
+          cp pubspec.yaml StorageShrink/
+          cp l10n.yaml StorageShrink/
+          cd StorageShrink
+          mkdir -p lib/l10n
+          cp ../../app_ar.arb lib/l10n/ 2>/dev/null || true
+          cp ../../app_en.arb lib/l10n/ 2>/dev/null || true
+          find ../.. -name "*.arb" -exec cp {} lib/l10n/ \; 2>/dev/null || true
+          ls lib/l10n/
+          flutter pub get
+          flutter gen-l10n
+          flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StorageShrink-APK
+          path: StorageShrink/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
